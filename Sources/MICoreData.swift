@@ -8,6 +8,30 @@
 import Foundation
 import CoreData
 
+open class BaseStore: CoreDataStorable {
+	open var modelName: String
+
+	public init(modelName: String) {
+		self.modelName = modelName
+	}
+
+  lazy public var persistantContainer: NSPersistentContainer = makeContainer()
+
+  lazy public var mainContext: NSManagedObjectContext = persistantContainer.viewContext
+
+  lazy public var privateContextWithParent: NSManagedObjectContext = mainContext.privateChildContext
+
+  open func makeContainer() -> NSPersistentContainer {
+    let container: NSPersistentCloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
+    container.loadPersistentStores { storeDesc, error in
+      if let error = error {
+        assertionFailure(error.localizedDescription)
+      }
+    }
+    return container
+  }
+}
+
 public protocol CoreDataStorable {
   var modelName: String { get }
   var persistantContainer: NSPersistentContainer { get }
