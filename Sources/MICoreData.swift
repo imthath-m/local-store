@@ -9,9 +9,10 @@ import Foundation
 import CoreData
 
 open class BaseStore: CoreDataStorable {
+  public var loadstoreByDefault: Bool = true
 	open var modelName: String
 
-	public init(modelName: String) {
+  public init(modelName: String) {
 		self.modelName = modelName
 	}
 
@@ -23,9 +24,20 @@ open class BaseStore: CoreDataStorable {
 
   open func makeContainer() -> NSPersistentContainer {
     let container: NSPersistentCloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
+
+    guard loadstoreByDefault else {
+      return container
+    }
+
     container.loadPersistentStores { storeDesc, error in
       if let error = error {
         assertionFailure(error.localizedDescription)
+      }
+
+      if let url = storeDesc.url {
+        print("URL - " + url.absoluteString)
+      } else {
+        assertionFailure("No Store URL")
       }
     }
     return container
