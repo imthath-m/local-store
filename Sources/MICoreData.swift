@@ -183,7 +183,7 @@ extension NSManagedObjectContext {
         try self.save()
         debugPrint("✅✅✅ \(context) saved successfully")
       } catch {
-        debugPrint("❌❌❌ Failed to save \(context) - \(error)")
+        debugPrint("❌❌❌ Failed to save \(context) - \(error.localizedDescription)")
         isSuccess = false
       }
     }
