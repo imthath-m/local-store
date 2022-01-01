@@ -12,15 +12,21 @@ open class BaseStore: CoreDataStorable {
   public var loadstoreByDefault: Bool = true
 	open var modelName: String
 
-  public init(modelName: String) {
+  public init(modelName: String, location url: URL?) {
 		self.modelName = modelName
+    persistantContainer = NSPersistentCloudKitContainer(name: modelName)
+    if let modelURL = url {
+      persistantContainer.persistentStoreDescriptions = [NSPersistentStoreDescription(url: modelURL)]
+    }
+    persistantContainer.loadStoreAndAssertFailure()
+    privateContextWithParent = persistantContainer.viewContext.privateChildContext
 	}
 
-  lazy public var persistantContainer: NSPersistentContainer = makeContainer()
+  public var persistantContainer: NSPersistentContainer
 
-  lazy public var mainContext: NSManagedObjectContext = persistantContainer.viewContext
+  public var mainContext: NSManagedObjectContext { persistantContainer.viewContext }
 
-  lazy public var privateContextWithParent: NSManagedObjectContext = mainContext.privateChildContext
+  public var privateContextWithParent: NSManagedObjectContext
 
   open func makeContainer() -> NSPersistentContainer {
     let container: NSPersistentCloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
@@ -29,7 +35,18 @@ open class BaseStore: CoreDataStorable {
       return container
     }
 
-    container.loadPersistentStores { storeDesc, error in
+    container.loadStoreAndAssertFailure()
+    return container
+  }
+
+  func loadContainer(_ container: NSPersistentContainer) {
+
+  }
+}
+
+public extension NSPersistentContainer {
+  func loadStoreAndAssertFailure() {
+    loadPersistentStores { storeDesc, error in
       if let error = error {
         assertionFailure(error.localizedDescription)
       }
@@ -40,7 +57,6 @@ open class BaseStore: CoreDataStorable {
         assertionFailure("No Store URL")
       }
     }
-    return container
   }
 }
 
